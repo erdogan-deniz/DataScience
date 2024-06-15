@@ -1,354 +1,260 @@
+from typing import Union, Callable
+
 import numpy
 import pandas
 import random
 
-from typing import Union, Callable
-
 
 class LinearRegression:
     """
-    --------------------------------------------------------------------------------------------------------------------
-    Class description: Linear regression class.
-    --------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+    Class description: A linear regression class.
+------------------------------------------------------------------------------------------------------------------------
     Attributes:
-        __reg:
-            Description: A type of regularization.
-            Type: Union[str, None].
-            Necessity: Optional.
-            Default value: None.
-
+------------------------------------------------------------------------------------------------------------------------
         __best_score:
             Description: The best metric score.
             Type: Union[float, None].
             Necessity: Unavailable.
             Default value: None.
 
-        __metric:
-            Description: A metric for testing model.
-            Type: str.
-            Necessity: Optional.
-            Default value: "mse".
-
-        __n_iter:
-            Description: A count of gradient iterations.
-            Type: int.
-            Necessity: Optional.
-            Default value: 100.
-
-        __weights:
-            Description: An array of model weights.
-            Type: Union[numpy.array, None].
-            Necessity: Unavailable.
-            Default value: None.
-
         __l1_coef:
-            Description: A coefficient of l1 regularization.
+            Description: A l1 regularization coefficient.
             Type: float.
             Necessity: Optional.
             Default value: 0.
 
         __l2_coef:
-            Description: A coefficient of l2 regularization.
+            Description: A l2 regularization coefficient.
             Type: float.
             Necessity: Optional.
             Default value: 0.
 
-        __random_state:
-            Description: A fixed seed of taking samples.
-            Type: int.
-            Necessity: Optional.
-            Default value: 42.
-
-        __sgd_sample:
-            Description: A count (%) of samples used in model fitting.
-            Type: Union[int, float, None].
-            Necessity: Optional.
-            Default value: None.
-
-        __learning_rate:
-            Description: A multiplier of gradient step (can be lambda function).
+        __learn_rate:
+            Description: A gradient multiplier of the step (can be lambda function).
             Type: Union[float, Callable].
             Necessity: Optional.
             Default value: 0.1.
-    --------------------------------------------------------------------------------------------------------------------
-    Methods:
-        get_coef:
-            Description: The method is used to get the latest weights of the trained model.
-            Returns: Weights of a fitting model.
-            Return type: Union[numpy.array, None].
 
-        fit:
-            Description: The method trains the model by finding the best weights.
-            Parameters: x - samples of data, y - targets of data, verbose - logging flag.
-            Parameters type: pandas.Dataframe, pandas.Series, Union[int, bool].
-            Return type: None.
+        __loss_type:
+            Description: A model loss function.
+            Type: str.
+            Necessity: Optional.
+            Default value: "mse".
 
-        calculate_metric:
-            Description: The method calculates the required metric.
-            Parameters: calculated_y - predicted target variables, y - the actual values of the target variable,
-                        metric - the name of the metric to be calculated.
-            Parameters type: pandas.Series, pandas.Series, str.
-            Returns: The value of the selected metric.
-            Return type: float.
-
-        get_best_score:
-            Description: Returns the best value of the set metric.
-            Returns: The value of the required metric.
-            Return type: Union[float, None].
-
-        logging:
-            Description: Prints loss and metric values every n steps.
-            Parameters: step - the number of the step, loss_value - the value of loss,
-                        metric_value - the value of metric, verbose - the flag of logging.
-            Parameters type: int, float, float, Union[int, bool].
-            Return type: None.
-
-        predict:
-            Description: The method predicts target values based on samples.
-            Parameters: samples - the data that the forecast is based on.
-            Parameters type: pandas.DataFrame.
-            Returns: Predicted target variables.
-            Return type: numpy.array.
-
-        calculate_loss_regularization:
-            Description: The method calculates the loss regularization for a linear model.
-            Returns: The value of regularization for loss.
-            Return type: float.
-
-        calculate_gradient_regularization:
-            Description: The method calculates the regularization gradient for a linear model.
-            Returns: The value of regularization for the gradient.
-            Return type: Union[float, numpy.array].
-    --------------------------------------------------------------------------------------------------------------------
-    Magic methods:
-        __init__:
-            Description: The method initializes the fields of the class.
-            Parameters: n_iter - a count of gradient iterations, learning_rate - a multiplier of gradient step (can be
-                        lambda function), metric - a metric for testing model, reg - a type of regularization, l1_coef -
-                        a coefficient of l1 regularization, l2_coef - a coefficient of l2 regularization, sgd_sample -
-                        a count (%) of samples used in model fitting, random_state - a fixed seed of taking samples.
-            Parameters type: int, Union[float, Callable], str, Union[str, None], float, float, Union[int, float, None],
-                             int.
-            Return type: None.
-
-        __repl__:
-            Description: The method describes the object in an official form.
-            Returns: An official format string.
-            Return type: str.
-
-        __str__:
-            Description: The method describes the object in a human-friendly format.
-            Returns: A convenient format string.
-            Return type: str.
-    --------------------------------------------------------------------------------------------------------------------
-    Typical use:
-        model = MyLineReg(learning_rate=0.1, metric="mae", reg="l1", random_state=42)
-        model.fit(x=x, y=y, verbose=True)
-        predictions = model.predict(samples=samples)
-    --------------------------------------------------------------------------------------------------------------------
-    """
-
-    def __repr__(self) -> str:
-        """
-        The method describes the object in an official form.
-
-        :return: An official format string.
-        """
-
-        return """
-    --------------------------------------------------------------------------------------------------------------------
-    Class description: Linear regression class.
-    --------------------------------------------------------------------------------------------------------------------
-    Attributes:
-        __reg:
-            Description: A type of regularization.
+        __metric_type:
+            Description: A model metric.
             Type: Union[str, None].
             Necessity: Optional.
             Default value: None.
 
-        __best_score:
-            Description: The best metric score.
-            Type: Union[float, None].
-            Necessity: Unavailable.
-            Default value: None.
-
-        __metric:
-            Description: A metric for testing model.
-            Type: str.
-            Necessity: Optional.
-            Default value: "mse".
-
-        __n_iter:
-            Description: A count of gradient iterations.
+        __num_iter:
+            Description: A number of gradient epochs.
             Type: int.
             Necessity: Optional.
             Default value: 100.
 
-        __weights:
-            Description: An array of model weights.
-            Type: Union[numpy.array, None].
-            Necessity: Unavailable.
-            Default value: None.
-
-        __l1_coef:
-            Description: A coefficient of l1 regularization.
-            Type: float.
-            Necessity: Optional.
-            Default value: 0.
-
-        __l2_coef:
-            Description: A coefficient of l2 regularization.
-            Type: float.
-            Necessity: Optional.
-            Default value: 0.
-
-        __random_state:
+        __rand_state:
             Description: A fixed seed of taking samples.
             Type: int.
             Necessity: Optional.
-            Default value: 42.
+            Default value: 1.
 
-        __sgd_sample:
-            Description: A count (%) of samples used in model fitting.
+        __reg_type:
+            Description: A regularization type.
+            Type: Union[str, None].
+            Necessity: Optional.
+            Default value: None.
+
+        __sgd_samples:
+            Description: A number (%) of samples used in model fitting.
             Type: Union[int, float, None].
             Necessity: Optional.
             Default value: None.
 
-        __learning_rate:
-            Description: A multiplier of gradient step (can be lambda function).
-            Type: Union[float, Callable].
-            Necessity: Optional.
-            Default value: 0.1.
-    --------------------------------------------------------------------------------------------------------------------
+        __weights:
+            Description: A model weights.
+            Type: Union[numpy.array, None].
+            Necessity: Unavailable.
+            Default value: None.
+------------------------------------------------------------------------------------------------------------------------
     Methods:
-        get_coef:
-            Description: The method is used to get the latest weights of the trained model.
-            Returns: Weights of a fitting model.
-            Return type: Union[numpy.array, None].
+------------------------------------------------------------------------------------------------------------------------
+        calc_grad:
+            Description: The method calculates a gradient.
+            Parameters: x - samples,
+                        y - true targets,
+                        pred_y - predicted targets.
+            Parameters type: pandas.Dataframe,
+                             numpy.array,
+                             numpy.array.
+            Returns: A gradient.
+            Return type: numpy.array.
 
-        fit:
-            Description: The method trains the model by finding the best weights.
-            Parameters: x - samples of data, y - targets of data, verbose - logging flag.
-            Parameters type: pandas.Dataframe, pandas.Series, Union[int, bool].
-            Return type: None.
+        calc_grad_reg:
+            Description: The method calculates a regularization gradient.
+            Returns: The value of regularization for the gradient.
+            Return type: Union[float, numpy.array].
 
-        calculate_metric:
-            Description: The method calculates the required metric.
-            Parameters: calculated_y - predicted target variables, y - the actual values of the target variable,
-                        metric - the name of the metric to be calculated.
-            Parameters type: pandas.Series, pandas.Series, str.
-            Returns: The value of the selected metric.
+        calс_loss:
+            Description: The method calculates a loss value.
+            Parameters: x - samples,
+                        y - true targets.
+            Parameters type: pandas.Dataframe,
+                             numpy.array.
+            Returns: A loss value.
             Return type: float.
 
-        get_best_score:
-            Description: Returns the best value of the set metric.
-            Returns: The value of the required metric.
+        calс_loss_reg:
+            Description: The method calculates the loss of regularization.
+            Returns: A regularization loss value.
+            Return type: float.
+
+        fit:
+            Description: The method fits the model by samples.
+            Parameters: x - samples,
+                        y - targets,
+                        log_flag - a flag of logging.
+            Parameters type: pandas.Dataframe,
+                             pandas.Series,
+                             Union[int, bool].
+            Return type: None.
+
+        get_score:
+            Description: The method returns the last metric value.
+            Returns: The last metric value.
             Return type: Union[float, None].
 
-        logging:
-            Description: Prints loss and metric values every n steps.
-            Parameters: step - the number of the step, loss_value - the value of loss,
-                        metric_value - the value of metric, verbose - the flag of logging.
-            Parameters type: int, float, float, Union[int, bool].
-            Return type: None.
+        get_weights:
+            Description: The method returns the last model weights.
+            Returns: The last model weights.
+            Return type: Union[numpy.array, None].
 
         predict:
             Description: The method predicts target values based on samples.
-            Parameters: samples - the data that the forecast is based on.
+            Parameters: x - samples.
             Parameters type: pandas.DataFrame.
-            Returns: Predicted target variables.
-            Return type: numpy.array.
+            Returns: A predicted target variables.
+            Return type: Union[numpy.array, None].
 
-        calculate_loss_regularization:
-            Description: The method calculates the loss regularization for a linear model.
-            Returns: The value of regularization for loss.
-            Return type: float.
+        reporting:
+            Description: The method prints loss and metric values every n epoch.
+            Parameters: num_epoch - an epoch number,
+                        loss_value - the current loss value,
+                        metric_value - the actual metric value,
+                        log_flag - a flag of logging.
+            Parameters type: int,
+                             float,
+                             Union[float, None],
+                             Union[int, bool].
+            Return type: None.
 
-        calculate_gradient_regularization:
-            Description: The method calculates the regularization gradient for a linear model.
-            Returns: The value of regularization for the gradient.
-            Return type: Union[float, numpy.array].
-    --------------------------------------------------------------------------------------------------------------------
+        sgd_select:
+            Description: The method randomly selects indexes of samples based on a seed.
+            Parameters: sample_count - a count of samples.
+            Parameters type: int.
+            Return type: list.
+
+        update_weights:
+            Description: The method updates model weights.
+            Parameters: grad - a gradient of the loss function,
+                        num_epoch - an epoch number.
+            Parameters type: numpy.array,
+                             int.
+            Return type: None.
+------------------------------------------------------------------------------------------------------------------------
     Magic methods:
+------------------------------------------------------------------------------------------------------------------------
         __init__:
-            Description: The method initializes the fields of the class.
-            Parameters: n_iter - a count of gradient iterations, learning_rate - a multiplier of gradient step (can be
-                        lambda function), metric - a metric for testing model, reg - a type of regularization, l1_coef -
-                        a coefficient of l1 regularization, l2_coef - a coefficient of l2 regularization, sgd_sample -
-                        a count (%) of samples used in model fitting, random_state - a fixed seed of taking samples.
-            Parameters type: int, Union[float, Callable], str, Union[str, None], float, float, Union[int, float, None],
+            Description: The method initializes class fields.
+            Parameters: num_iter - a number of gradient epochs,
+                        learn_rate - a gradient multiplier of the step (can be lambda function),
+                        loss_type - a model loss function,
+                        metric_type - a model metric,
+                        reg_type - a regularization type,
+                        l1_coef - a l1 regularization coefficient,
+                        l2_coef - a l2 regularization coefficient,
+                        sgd_samples - a number (%) of samples used in model fitting,
+                        rand_state - a fixed seed of taking samples.
+            Parameters type: int,
+                             Union[float, Callable],
+                             str,
+                             Union[str, None],
+                             Union[str, None],
+                             float,
+                             float,
+                             Union[int, float, None],
                              int.
             Return type: None.
 
         __repl__:
-            Description: The method describes the object in an official form.
+            Description: The method describes the object in an official format.
             Returns: An official format string.
             Return type: str.
 
         __str__:
             Description: The method describes the object in a human-friendly format.
-            Returns: A convenient format string.
+            Returns: A human-friendly format string.
             Return type: str.
-    --------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+    Static methods:
+------------------------------------------------------------------------------------------------------------------------
+        calc_metric:
+            Description: The method calculates the metric.
+            Parameters: pred_y - predicted target variables,
+                        y - real target variable,
+                        metric_type - a metric name.
+            Parameters type: numpy.array,
+                             numpy.array,
+                             Union[str, None].
+            Returns: A selected metric value.
+            Return type: Union[float, None]
+------------------------------------------------------------------------------------------------------------------------
     Typical use:
-        model = MyLineReg(learning_rate=0.1, metric="mae", reg="l1", random_state=42)
-        model.fit(x=x, y=y, verbose=True)
-        predictions = model.predict(samples=samples)
-    --------------------------------------------------------------------------------------------------------------------
+------------------------------------------------------------------------------------------------------------------------
+        model = MyLineReg(lear_rate=0.1, metric_type="mae", reg_type="l1")
+        model.fit(x=x, y=y, log_flag=True)
+        predictions = model.predict(x=x)
+------------------------------------------------------------------------------------------------------------------------
     """
 
-    def __str__(self) -> str:
+    def __init__(self, num_iter: int = 100, learn_rate: Union[float, Callable] = 0.1,
+                 loss_type: str = "mse", metric_type: Union[str, None] = None,
+                 reg_type: Union[str, None] = None, l1_coef: float = 0, l2_coef: float = 0,
+                 sgd_samples: Union[int, float, None] = None, rand_state: int = 1) -> None:
         """
-        The method describes the object in a human-friendly format.
+        The method initializes a class fields.
 
-        :return: A convenient format string.
-        """
-
-        # Check reg for print:
-        current_reg: str = f" reg={self.__reg}, " if self.__reg is not None else " "
-
-        # Check sgd_samples for print:
-        current_sgd: str = f" sgd_sample={self.__sgd_sample}, " if self.__sgd_sample is not None else " "
-
-        return (f"MyLineReg class: n_iter={self.__n_iter}, learning_rate={self.__learning_rate}, " +
-                f"metric={self.__metric,}," + current_reg + f"l1_coef={self.__l1_coef}, l2_coef={self.__l2_coef}," +
-                current_sgd + f"random_state={self.__random_state}.")
-
-    def __init__(self, n_iter: int = 100, learning_rate: Union[float, Callable] = 0.1, metric: str = "mse",
-                 reg: Union[str, None] = None, l1_coef: float = 0, l2_coef: float = 0,
-                 sgd_sample: Union[int, float, None] = None, random_state: int = 42) -> None:
-        """
-        The method initializes the fields of the class.
-        
-        :param n_iter: A count of gradient iterations.
-        :param learning_rate: A multiplier of gradient step (can be lambda function).
-        :param metric: A metric for testing model.
-        :param reg: A type of regularization.
-        :param l1_coef: A coefficient of l1 regularization.
-        :param l2_coef: A coefficient of l2 regularization.
-        :param sgd_sample: A count (%) of samples used in model fitting.
-        :param random_state: A fixed seed of taking samples.
+        :param num_iter: A number of gradient epochs.
+        :param learn_rate: A gradient multiplier of the step (can be lambda function).
+        :param loss_type: A model loss function.
+        :param metric_type: A model metric.
+        :param reg_type: A regularization type.
+        :param l1_coef: A l1 regularization coefficient.
+        :param l2_coef: A l2 regularization coefficient.
+        :param sgd_samples: A number (%) of samples used in model fitting.
+        :param rand_state: A fixed seed of taking samples.
         """
 
         self.__best_score: Union[float, None] = None
         self.__weights: Union[numpy.array, None] = None
 
-        # Set n_iter value:
-        if 5 <= n_iter <= 2500:
-            self.__n_iter: int = n_iter
+        # Set num_iter value:
+        if 5 <= num_iter <= 5000:
+            self.__num_iter: int = num_iter
         else:
-            raise "Error! Incorrect n_iter argument value."
+            raise "Error! Incorrect num_iter argument value."
 
-        # Set learning rate value:
-        if not callable(learning_rate):
+        # Set learn_rate value:
+        if not callable(learn_rate):
             # Case with float value:
-            if 0.00001 <= learning_rate <= 100:
-                self.__learning_rate: Union[float, Callable] = learning_rate
+            if 0.00001 <= learn_rate <= 100:
+                self.__learn_rate: Union[float, Callable] = learn_rate
             else:
-                raise "Error! Incorrect learning_rate argument value."
+                raise "Error! Incorrect learn_rate argument value."
         else:
             # Case with lamda function:
-            self.__learning_rate: Union[float, Callable] = learning_rate
+            self.__learn_rate: Union[float, Callable] = learn_rate
 
         # Set l1_coef value:
         if 0 <= l1_coef <= 1:
@@ -363,166 +269,323 @@ class LinearRegression:
             raise "Error! Incorrect l2_coef argument value."
 
         # Set random state:
-        if 1 <= random_state <= 100:
-            self.__random_state: int = random_state
+        if 1 <= rand_state <= 100:
+            self.__rand_state: int = rand_state
         else:
-            raise "Error! Incorrect random_state argument value."
+            raise "Error! Incorrect rand_state argument value."
 
-        # Set sgd_sample:
-        if isinstance(sgd_sample, int):
-            if sgd_sample <= 0:
-                raise "Error! Incorrect sgd_sample argument value."
+        # Set sgd_samples:
+        if isinstance(sgd_samples, int):
+            if sgd_samples <= 0:
+                raise "Error! Incorrect sgd_samples argument value."
             else:
-                self.__sgd_sample: Union[int, float, None] = sgd_sample
-        elif isinstance(sgd_sample, float):
-            if (sgd_sample > 1) or (sgd_sample < 0):
-                raise "Error! Incorrect sgd_sample argument value."
+                self.__sgd_samples: Union[int, float, None] = sgd_samples
+        elif isinstance(sgd_samples, float):
+            if (sgd_samples > 1) or (sgd_samples < 0):
+                raise "Error! Incorrect sgd_samples argument value."
             else:
-                self.__sgd_sample: Union[int, float, None] = sgd_sample
+                self.__sgd_samples: Union[int, float, None] = sgd_samples
         else:
-            self.__sgd_sample: Union[int, float, None] = None
+            self.__sgd_samples: Union[int, float, None] = None
 
-        # Set regularization type:
-        self.__reg: Union[str, None] = reg if reg in ["l1", "l2", "elasticnet"] else None
+        # Set loss_type value:
+        self.__loss_type: str = loss_type if loss_type in ["mse"] else "mse"
 
-        # Set metric type (use MSE as a default metric):
-        self.__metric: str = "mse" if (metric not in ["r2", "mae", "rmse", "mape"]) else metric
+        # Set reg_type value:
+        self.__reg_type: Union[str, None] = reg_type if reg_type in ["l1", "l2", "elasticnet"] else None
+
+        # Set metric_type value:
+        self.__metric_type: Union[str, None] = metric_type \
+            if metric_type in ["r2", "mae", "rmse", "mape", "mse"] else None
+
+    def __repr__(self) -> str:
+        """
+        The method describes the object in an official format.
+
+        :return: An official format string.
+        """
+
+        return """
+------------------------------------------------------------------------------------------------------------------------
+    Class description: A linear regression class.
+------------------------------------------------------------------------------------------------------------------------
+    Attributes:
+------------------------------------------------------------------------------------------------------------------------
+        __best_score:
+            Description: The best metric score.
+            Type: Union[float, None].
+            Necessity: Unavailable.
+            Default value: None.
+
+        __l1_coef:
+            Description: A l1 regularization coefficient.
+            Type: float.
+            Necessity: Optional.
+            Default value: 0.
+
+        __l2_coef:
+            Description: A l2 regularization coefficient.
+            Type: float.
+            Necessity: Optional.
+            Default value: 0.
+
+        __learn_rate:
+            Description: A gradient multiplier of the step (can be lambda function).
+            Type: Union[float, Callable].
+            Necessity: Optional.
+            Default value: 0.1.
+
+        __loss_type:
+            Description: A model loss function.
+            Type: str.
+            Necessity: Optional.
+            Default value: "mse".
+
+        __metric_type:
+            Description: A model metric.
+            Type: Union[str, None].
+            Necessity: Optional.
+            Default value: None.
+
+        __num_iter:
+            Description: A number of gradient epochs.
+            Type: int.
+            Necessity: Optional.
+            Default value: 100.
+
+        __rand_state:
+            Description: A fixed seed of taking samples.
+            Type: int.
+            Necessity: Optional.
+            Default value: 1.
+
+        __reg_type:
+            Description: A regularization type.
+            Type: Union[str, None].
+            Necessity: Optional.
+            Default value: None.
+
+        __sgd_samples:
+            Description: A number (%) of samples used in model fitting.
+            Type: Union[int, float, None].
+            Necessity: Optional.
+            Default value: None.
+
+        __weights:
+            Description: A model weights.
+            Type: Union[numpy.array, None].
+            Necessity: Unavailable.
+            Default value: None.
+------------------------------------------------------------------------------------------------------------------------
+    Methods:
+------------------------------------------------------------------------------------------------------------------------
+        calc_grad:
+            Description: The method calculates a gradient.
+            Parameters: x - samples,
+                        y - true targets,
+                        pred_y - predicted targets.
+            Parameters type: pandas.Dataframe,
+                             numpy.array,
+                             numpy.array.
+            Returns: A gradient.
+            Return type: numpy.array.
+
+        calc_grad_reg:
+            Description: The method calculates a regularization gradient.
+            Returns: The value of regularization for the gradient.
+            Return type: Union[float, numpy.array].
+
+        calс_loss:
+            Description: The method calculates a loss value.
+            Parameters: x - samples,
+                        y - true targets.
+            Parameters type: pandas.Dataframe,
+                             numpy.array.
+            Returns: A loss value.
+            Return type: float.
+
+        calс_loss_reg:
+            Description: The method calculates the loss of regularization.
+            Returns: A regularization loss value.
+            Return type: float.
+
+        fit:
+            Description: The method fits the model by samples.
+            Parameters: x - samples,
+                        y - targets,
+                        log_flag - a flag of logging.
+            Parameters type: pandas.Dataframe,
+                             pandas.Series,
+                             Union[int, bool].
+            Return type: None.
+
+        get_score:
+            Description: The method returns the last metric value.
+            Returns: The last metric value.
+            Return type: Union[float, None].
+
+        get_weights:
+            Description: The method returns the last model weights.
+            Returns: The last model weights.
+            Return type: Union[numpy.array, None].
+
+        predict:
+            Description: The method predicts target values based on samples.
+            Parameters: x - samples.
+            Parameters type: pandas.DataFrame.
+            Returns: A predicted target variables.
+            Return type: Union[numpy.array, None].
+
+        reporting:
+            Description: The method prints loss and metric values every n epoch.
+            Parameters: num_epoch - an epoch number,
+                        loss_value - the current loss value,
+                        metric_value - the actual metric value,
+                        log_flag - a flag of logging.
+            Parameters type: int,
+                             float,
+                             Union[float, None],
+                             Union[int, bool].
+            Return type: None.
+
+        sgd_select:
+            Description: The method randomly selects indexes of samples based on a seed.
+            Parameters: sample_count - a count of samples.
+            Parameters type: int.
+            Return type: list.
+
+        update_weights:
+            Description: The method updates model weights.
+            Parameters: grad - a gradient of the loss function,
+                        num_epoch - an epoch number.
+            Parameters type: numpy.array,
+                             int.
+            Return type: None.
+------------------------------------------------------------------------------------------------------------------------
+    Magic methods:
+------------------------------------------------------------------------------------------------------------------------
+        __init__:
+            Description: The method initializes class fields.
+            Parameters: num_iter - a number of gradient epochs,
+                        learn_rate - a gradient multiplier of the step (can be lambda function),
+                        loss_type - a model loss function,
+                        metric_type - a model metric,
+                        reg_type - a regularization type,
+                        l1_coef - a l1 regularization coefficient,
+                        l2_coef - a l2 regularization coefficient,
+                        sgd_samples - a number (%) of samples used in model fitting,
+                        rand_state - a fixed seed of taking samples.
+            Parameters type: int,
+                             Union[float, Callable],
+                             str,
+                             Union[str, None],
+                             Union[str, None],
+                             float,
+                             float,
+                             Union[int, float, None],
+                             int.
+            Return type: None.
+
+        __repl__:
+            Description: The method describes the object in an official format.
+            Returns: An official format string.
+            Return type: str.
+
+        __str__:
+            Description: The method describes the object in a human-friendly format.
+            Returns: A human-friendly format string.
+            Return type: str.
+------------------------------------------------------------------------------------------------------------------------
+    Static methods:
+------------------------------------------------------------------------------------------------------------------------
+        calc_metric:
+            Description: The method calculates the metric.
+            Parameters: pred_y - predicted target variables,
+                        y - real target variable,
+                        metric_type - a metric name.
+            Parameters type: numpy.array,
+                             numpy.array,
+                             Union[str, None].
+            Returns: A selected metric value.
+            Return type: Union[float, None]
+------------------------------------------------------------------------------------------------------------------------
+    Typical use:
+------------------------------------------------------------------------------------------------------------------------
+        model = MyLineReg(lear_rate=0.1, metric_type="mae", reg_type="l1")
+        model.fit(x=x, y=y, log_flag=True)
+        predictions = model.predict(x=x)
+------------------------------------------------------------------------------------------------------------------------
+"""
+
+    def __str__(self) -> str:
+        """
+        The method describes the object in a human-friendly format.
+
+        :return: A human-friendly format string.
+        """
+
+        # Check reg_type:
+        cur_reg_type: str = f" reg_type={self.__reg_type}, " if self.__reg_type is not None else " "
+
+        # Check sgd_samples:
+        cur_sgd_samples: str = f" sgd_samples={self.__sgd_samples}, " if self.__sgd_samples is not None else " "
+
+        # Check metric_type:
+        cur_metric_type: str = f" metric_type={self.__metric_type}, " if self.__metric_type is not None else " "
+
+        # Check loss_type:
+        cur_loss_type: str = f" loss_type={self.__loss_type}, " if self.__loss_type is not None else " "
+
+        return (f"Linear regression class: num_iter={self.__num_iter}, learn_rate={self.__learn_rate}, " +
+                cur_loss_type + cur_metric_type + cur_reg_type + f"l1_coef={self.__l1_coef}, " +
+                f"l2_coef={self.__l2_coef}," + cur_sgd_samples + f"rand_state={self.__rand_state}.")
 
     @staticmethod
-    def calculate_metric(calculated_y: pandas.Series, y: pandas.Series, metric: str) -> float:
+    def calc_metric(pred_y: numpy.array, y: numpy.array, metric_type: Union[str, None]) -> Union[float, None]:
         """
-        The method calculates the required metric.
+        The method calculates the metric.
 
-        :param y: The actual values of the target variable.
-        :param metric: The name of the metric to be calculated.
-        :param calculated_y: Predicted target variables.
-        :return: The value of the selected metric.
+        :param pred_y: Predicted target variables.
+        :param y: Real target variable.
+        :param metric_type: A metric name.
+
+        :return: A selected metric value.
         """
 
-        if metric == "mae":
-            return numpy.mean(abs(calculated_y - y))
-        elif metric == "rmse":
-            return numpy.mean((calculated_y - y) ** 2) ** 0.5
-        elif metric == "r2":
-            sst: float = ((y - numpy.mean(y)) ** 2).sum()
-            ssr: float = ((y - calculated_y) ** 2).sum()
+        if metric_type is not None:
+            if metric_type == "mae":
+                return numpy.mean(abs(pred_y - y))
+            elif metric_type == "mape":
+                return numpy.sum(abs((y - pred_y) / y)) * 100 / len(y)
+            elif metric_type == "mse":
+                return numpy.mean((pred_y - y) ** 2)
+            elif metric_type == "rmse":
+                return numpy.mean((pred_y - y) ** 2) ** 0.5
+            elif metric_type == "r2":
+                sst: float = ((y - numpy.mean(y)) ** 2).sum()
+                ssr: float = ((y - pred_y) ** 2).sum()
 
-            return 1 - ssr / sst
-        elif metric == "mape":
-            return numpy.sum(abs((y - calculated_y) / y)) * 100 / len(y)
+                return 1 - (ssr / sst)
         else:
-            return numpy.mean((calculated_y - y) ** 2)
+            return None
 
-    def get_coef(self) -> Union[numpy.array, None]:
+    def calc_grad(self, x: pandas.DataFrame, y: numpy.array, pred_y: numpy.array) -> numpy.array:
         """
-        The method is used to get the latest weights of the trained model.
+        The method calculates a gradient.
 
-        :return: Weights of a fitting model.
-        """
+        :param x: Samples.
+        :param y: True targets.
+        :param pred_y: Predicted targets.
 
-        return self.__weights[1:]
-
-    def get_best_score(self) -> Union[float, None]:
-        """
-        Returns the best value of the set metric.
-
-        :return: The value of the required metric.
+        :return: A gradient.
         """
 
-        return self.__best_score
+        if self.__loss_type == "mse":
+            return 2 / len(y) * ((numpy.array(pred_y) - numpy.array(y)) @ x)
 
-    def fit(self, x: pandas.DataFrame, y: pandas.Series, verbose: Union[int, bool] = False) -> None:
+    def calc_grad_reg(self) -> Union[float, numpy.array]:
         """
-        The method trains the model by finding the best weights.
-
-        :param y: A target variable.
-        :param verbose: A logging flag.
-        :param x: Features (matrix of samples) for fitting.
-        :return: None.
-        """
-
-        # Add the bias column:
-        x.insert(0, "w0", 1.0)
-        self.__weights = numpy.ones(x.shape[1])
-
-        # Fixing seed:
-        random.seed(self.__random_state)
-
-        for step in range(1, self.__n_iter + 1):
-            # Define used samples rows:
-            if isinstance(self.__sgd_sample, int):
-                used_samples_rows: list = random.sample(range(x.shape[0]), self.__sgd_sample)
-            elif isinstance(self.__sgd_sample, float):
-                used_samples_rows: list = random.sample(range(x.shape[0]), round(self.__sgd_sample * x.shape[0]))
-            else:
-                used_samples_rows: list = random.sample(range(x.shape[0]), x.shape[0])
-
-            # Samples and targets are used for fitting:
-            used_samples = x.iloc[used_samples_rows]
-            used_targets = y.iloc[used_samples_rows]
-
-            # Predict y:
-            calculated_y: numpy.array = used_samples @ self.__weights
-
-            # Calculate loss value:
-            loss_value: float = numpy.mean((((x @ self.__weights) - y) ** 2)) + self.calculate_loss_regularization()
-
-            # Calculate model metric:
-            metric_value: float = self.calculate_metric(calculated_y=pandas.Series(x @ self.__weights), y=y,
-                                                        metric=self.__metric)
-
-            # Calculate gradient of loss function:
-            gradient: numpy.array = ((2 / len(used_targets)) * (calculated_y - used_targets) @ used_samples +
-                                     self.calculate_gradient_regularization())
-
-            # Update model weights:
-            self.__weights -= gradient * self.__learning_rate if not callable(self.__learning_rate) \
-                else gradient * self.__learning_rate(step)
-
-            # Print log (if verbose is True):
-            self.logging(step=step, loss_value=loss_value, metric_value=metric_value, verbose=verbose)
-
-        # Save the best metric score:
-        self.__best_score = self.calculate_metric(calculated_y=used_samples @ self.__weights, y=used_targets,
-                                                  metric=self.__metric)
-
-    def predict(self, samples: pandas.DataFrame) -> numpy.array:
-        """
-        The method predicts target values based on samples.
-
-        :param samples: The data that the forecast is based on.
-        :return: Predicted target variables.
-        """
-
-        # Adding the bias column:
-        samples.insert(0, "w0", 1)
-
-        # Make predictions:
-        return samples @ self.__weights
-
-    def calculate_loss_regularization(self) -> float:
-        """
-        The method calculates the loss regularization for a linear model.
-
-        :return: The value of regularization for loss.
-        """
-
-        # Calculate losses:
-        l1_loss: float = self.__l1_coef * (abs(self.__weights).sum())
-        l2_loss: float = self.__l2_coef * ((self.__weights ** 2).sum())
-
-        if self.__reg == "l1":
-            return l1_loss
-        elif self.__reg == "l2":
-            return l2_loss
-        elif self.__reg == "elasticnet":
-            return l1_loss + l2_loss
-        else:
-            return 0
-
-    def calculate_gradient_regularization(self) -> Union[float, numpy.array]:
-        """
-        The method calculates the regularization gradient for a linear model.
+        The method calculates a regularization gradient.
 
         :return: The value of regularization for the gradient.
         """
@@ -531,29 +594,184 @@ class LinearRegression:
         l1_loss: numpy.array = self.__l1_coef * (numpy.sign(self.__weights))
         l2_loss: numpy.array = self.__l2_coef * 2 * self.__weights
 
-        if self.__reg == "l1":
+        if self.__reg_type == "l1":
             return l1_loss
-        elif self.__reg == "l2":
+        elif self.__reg_type == "l2":
             return l2_loss
-        elif self.__reg == "elasticnet":
+        elif self.__reg_type == "elasticnet":
             return l1_loss + l2_loss
         else:
             return 0
 
-    def logging(self, step: int, loss_value: float, metric_value: float, verbose: Union[int, bool] = False) -> None:
+    def calc_loss(self, x: pandas.DataFrame, y: numpy.array) -> float:
         """
-        Prints loss and metric values every n steps.
+        The method calculates a loss value.
 
-        :param step: The step size.
-        :param verbose: A flag of logging.
-        :param loss_value: The current loss value.
-        :param metric_value: The actual metric value.
+        :param x: Samples.
+        :param y: True targets.
+
+        :return: A loss value.
+        """
+
+        if self.__loss_type == "mse":
+            return numpy.mean(((x @ self.__weights) - y) ** 2)
+
+    def calc_loss_reg(self) -> float:
+        """
+        The method calculates the regularization of loss.
+
+        :return: A regularization loss value.
+        """
+
+        # Calculate losses:
+        l1_loss: float = self.__l1_coef * (abs(self.__weights).sum())
+        l2_loss: float = self.__l2_coef * ((self.__weights ** 2).sum())
+
+        if self.__reg_type == "l1":
+            return l1_loss
+        elif self.__reg_type == "l2":
+            return l2_loss
+        elif self.__reg_type == "elasticnet":
+            return l1_loss + l2_loss
+        else:
+            return 0
+
+    def fit(self, x: pandas.DataFrame, y: pandas.Series, log_flag: Union[int, bool] = False) -> None:
+        """
+        The method fits the model by samples.
+
+        :param x: Samples.
+        :param y: Targets.
+        :param log_flag: Flag of logging.
+
         :return: None.
         """
 
-        if verbose > 0:
-            if step == 1:
-                print(f"| STARTING LOSS IS: {loss_value} | {self.__metric}: {metric_value}")
-            elif not (step % verbose):
-                print(f"| {step}: {loss_value} | {self.__metric}: {metric_value}")
+        # Add the bias column:
+        x.insert(0, "w0", 1.0)
+        self.__weights = numpy.ones(x.shape[1])
 
+        # Fixing seed:
+        random.seed(self.__rand_state)
+
+        for num_epoch in range(1, self.__num_iter + 1):
+            # Define used samples rows:
+            samples_ind: list = self.sgd_select(sample_count=x.shape[0])
+
+            # Samples and targets are used for fitting:
+            used_samples: pandas.DataFrame = x.iloc[samples_ind]
+            used_targets: pandas.Series = y.iloc[samples_ind]
+
+            # Predict y:
+            pred_y: numpy.array = used_samples @ self.__weights
+
+            # Calculate loss value:
+            loss_value: float = self.calc_loss(x=x, y=y) + self.calc_loss_reg()
+
+            # Calculate model metric:
+            metric_value: Union[float, None] = self.calc_metric(pred_y=x @ self.__weights,
+                                                                y=y, metric_type=self.__metric_type)
+
+            # Calculate gradient of loss function:
+            grad: numpy.array = (self.calc_grad(x=used_samples, y=used_targets, pred_y=pred_y) +
+                                 self.calc_grad_reg())
+
+            self.update_weights(grad=grad, num_epoch=num_epoch)
+
+            # Print log (if verbose is True):
+            self.reporting(num_epoch=num_epoch, loss_value=loss_value, metric_value=metric_value, log_flag=log_flag)
+
+        # Save the best metric score:
+        self.__best_score = self.calc_metric(pred_y=x @ self.__weights, y=y,
+                                             metric_type=self.__metric_type)
+
+    def get_score(self) -> Union[float, None]:
+        """
+        The method returns the last metric value.
+
+        :return: The last metric value.
+        """
+
+        return self.__best_score
+
+    def get_weights(self) -> Union[numpy.array, None]:
+        """
+        The method returns the last model weights.
+
+        :return: The last model weights.
+        """
+
+        return self.__weights[1:] if self.__weights is not None else None
+
+    def predict(self, x: pandas.DataFrame) -> Union[numpy.array, None]:
+        """
+        The method predicts target values based on samples.
+
+        :param x: The samples.
+
+        :return: Predicted target variables.
+        """
+
+        if self.__weights is not None:
+            # Adding the bias column:
+            x.insert(0, "w0", 1)
+
+            # Make predictions:
+            return x @ self.__weights
+        else:
+            return None
+
+    def reporting(self, num_epoch: int, loss_value: float = 0, metric_value: Union[float, None] = 0,
+                  log_flag: Union[int, bool] = False) -> None:
+        """
+        The method prints loss and metric values every n epoch.
+
+        :param num_epoch: An epoch number.
+        :param loss_value: The current loss value.
+        :param metric_value: The actual metric value.
+        :param log_flag: A flag of logging.
+
+        :return: None.
+        """
+
+        # Check the epoch number:
+        first_sent_part: str = f"| STARTING LOSS IS: {loss_value} |" if num_epoch == 1 \
+            else f"| EPOCH № {num_epoch} HAS LOSS: {loss_value} |"
+
+        # Check the metric value:
+        second_sent_part: str = f" METRIC {self.__metric_type.upper()} IS: {metric_value}" \
+            if self.__metric_type is not None else ""
+
+        if log_flag > 0:
+            if not (num_epoch % log_flag) or num_epoch == 1:
+                print(first_sent_part + second_sent_part)
+
+    def sgd_select(self, sample_count: int) -> list:
+        """
+        The method randomly selects indexes of samples based on a seed.
+
+        :param sample_count: A count of samples.
+
+        :return: Indexes of used samples.
+        """
+
+        if isinstance(self.__sgd_samples, int):
+            return random.sample(range(sample_count), self.__sgd_samples)
+        elif isinstance(self.__sgd_samples, float):
+            return random.sample(range(sample_count), round(self.__sgd_samples * sample_count))
+        else:
+            return random.sample(range(sample_count), sample_count)
+
+    def update_weights(self, grad: numpy.array, num_epoch: int) -> None:
+        """
+        The method updates model weights.
+
+        :param grad: A gradient of the loss function.
+        :param num_epoch: An epoch number.
+
+        :return: None.
+        """
+
+        if self.__weights is not None:
+            self.__weights = self.__weights - (grad * self.__learn_rate if not callable(self.__learn_rate)
+                                               else grad * self.__learn_rate(num_epoch))
