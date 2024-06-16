@@ -212,7 +212,7 @@ class LinearRegression:
 ------------------------------------------------------------------------------------------------------------------------
     Typical use:
 ------------------------------------------------------------------------------------------------------------------------
-        model = MyLineReg(lear_rate=0.1, metric_type="mae", reg_type="l1")
+        model = MyLineReg(lear_rate=0.1, metric_type="mae")
         model.fit(x=x, y=y, log_flag=True)
         predictions = model.predict(x=x)
 ------------------------------------------------------------------------------------------------------------------------
@@ -292,7 +292,8 @@ class LinearRegression:
         self.__loss_type: str = loss_type if loss_type in ["mse"] else "mse"
 
         # Set reg_type value:
-        self.__reg_type: Union[str, None] = reg_type if reg_type in ["l1", "l2", "elasticnet"] else None
+        self.__reg_type: Union[str, None] = reg_type if reg_type in ["l1", "l2", "elasticnet"] \
+            else None
 
         # Set metric_type value:
         self.__metric_type: Union[str, None] = metric_type \
@@ -541,7 +542,8 @@ class LinearRegression:
                 f"l2_coef={self.__l2_coef}," + cur_sgd_samples + f"rand_state={self.__rand_state}.")
 
     @staticmethod
-    def calc_metric(pred_y: numpy.array, y: numpy.array, metric_type: Union[str, None]) -> Union[float, None]:
+    def calc_metric(pred_y: numpy.array, y: numpy.array, 
+                    metric_type: Union[str, None]) -> Union[float, None]:
         """
         The method calculates the metric.
 
@@ -569,7 +571,8 @@ class LinearRegression:
         else:
             return None
 
-    def calc_grad(self, x: pandas.DataFrame, y: numpy.array, pred_y: numpy.array) -> numpy.array:
+    def calc_grad(self, x: pandas.DataFrame, y: numpy.array, 
+                  pred_y: numpy.array) -> numpy.array:
         """
         The method calculates a gradient.
 
@@ -636,7 +639,8 @@ class LinearRegression:
         else:
             return 0
 
-    def fit(self, x: pandas.DataFrame, y: pandas.Series, log_flag: Union[int, bool] = False) -> None:
+    def fit(self, x: pandas.DataFrame, y: pandas.Series, 
+            log_flag: Union[int, bool] = False) -> None:
         """
         The method fits the model by samples.
 
@@ -673,13 +677,14 @@ class LinearRegression:
                                                                 y=y, metric_type=self.__metric_type)
 
             # Calculate gradient of loss function:
-            grad: numpy.array = (self.calc_grad(x=used_samples, y=used_targets, pred_y=pred_y) +
-                                 self.calc_grad_reg())
+            grad: numpy.array = (self.calc_grad(x=used_samples, y=used_targets, 
+                                                pred_y=pred_y) + self.calc_grad_reg())
 
             self.update_weights(grad=grad, num_epoch=num_epoch)
 
             # Print log (if verbose is True):
-            self.reporting(num_epoch=num_epoch, loss_value=loss_value, metric_value=metric_value, log_flag=log_flag)
+            self.reporting(num_epoch=num_epoch, loss_value=loss_value, 
+                           metric_value=metric_value, log_flag=log_flag)
 
         # Save the best metric score:
         self.__best_score = self.calc_metric(pred_y=x @ self.__weights, y=y,
